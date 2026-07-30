@@ -1,0 +1,8 @@
+"""Notifications URLs."""
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.NotificationListView.as_view(), name='notification_list'),
+    path('<uuid:notification_id>/', views.NotificationDetailView.as_view(), name='notification_detail'),
+]
