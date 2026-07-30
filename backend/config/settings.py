@@ -157,6 +157,17 @@ CORS_ALLOW_HEADERS = [
     'dnt', 'origin', 'user-agent', 'x-csrftoken', 'x-requested-with',
 ]
 
+# ─── CSRF ─────────────────────────────────────────────────────────────────────────
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://*.vercel.app',
+    'https://*.onrender.com',
+]
+extra_csrf = config('CSRF_TRUSTED_ORIGINS', default='', cast=Csv())
+if extra_csrf:
+    CSRF_TRUSTED_ORIGINS.extend([origin.strip() for origin in extra_csrf if origin.strip()])
+
 # ─── INTERNATIONALISATION ─────────────────────────────────────────────────────────
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'

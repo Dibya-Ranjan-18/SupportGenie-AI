@@ -10,6 +10,7 @@ from .models import CustomUser
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[validate_password])
     password_confirm = serializers.CharField(write_only=True)
+    username = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = CustomUser
@@ -18,14 +19,40 @@ class RegisterSerializer(serializers.ModelSerializer):
             'role': {'required': False},
             'first_name': {'required': False},
             'last_name': {'required': False},
+            'email': {'validators': []},     # custom validation below for clean error messages
+            'username': {'validators': []},  # custom validation below
         }
 
     def validate(self, attrs):
         if attrs['password'] != attrs.pop('password_confirm'):
             raise serializers.ValidationError({'password': 'Passwords do not match.'})
+
         # Prevent self-assigning admin role via registration
         if attrs.get('role') == 'admin':
             attrs['role'] = 'customer'
+
+        # Clean email
+        email = attrs.get('email', '').strip().lower()
+        attrs['email'] = email
+
+        # Check email uniqueness case-insensitively
+        if CustomUser.objects.filter(email__iexact=email).exists():
+            raise serializers.ValidationError({'email': 'An account with this email address already exists.'})
+
+        # Handle username fallback
+        username = attrs.get('username', '').strip()
+        if not username:
+            base_username = email.split('@')[0]
+            username = base_username
+            counter = 1
+            while CustomUser.objects.filter(username__iexact=username).exists():
+                username = f"{base_username}_{counter}"
+                counter += 1
+        else:
+            if CustomUser.objects.filter(username__iexact=username).exists():
+                raise serializers.ValidationError({'username': 'This username is already taken.'})
+
+        attrs['username'] = username
         return attrs
 
     def create(self, validated_data):
