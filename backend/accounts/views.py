@@ -42,13 +42,16 @@ def get_tokens_for_user(user):
 def set_refresh_cookie(response, refresh_token):
     """Set HttpOnly, Secure cookie for refresh token."""
     cookie_max_age = getattr(settings, 'SIMPLE_JWT', {}).get('REFRESH_TOKEN_LIFETIME', timedelta(days=7)).total_seconds()
+    # Cross-site cookies between Vercel & Render require SameSite='None' and Secure=True in production
+    samesite = 'None' if not settings.DEBUG else 'Lax'
+    secure = True if not settings.DEBUG else False
     response.set_cookie(
         key='refresh_token',
         value=refresh_token,
         max_age=int(cookie_max_age),
         httponly=True,
-        secure=not settings.DEBUG,
-        samesite='Lax',
+        secure=secure,
+        samesite=samesite,
         path='/api/v1/auth/',
     )
     return response
