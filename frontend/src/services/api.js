@@ -1,11 +1,17 @@
 // Central API service using Axios with JWT auth and token refresh
 import axios from 'axios'
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+// Normalize BASE_URL so it always has /api/v1 and no trailing slash
+let rawUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1').trim().replace(/\/+$/, '')
+if (!rawUrl.endsWith('/api/v1')) {
+  rawUrl = `${rawUrl}/api/v1`
+}
+export const BASE_URL = rawUrl
 
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
+  timeout: 60000, // 60s timeout to handle Render free-tier cold starts smoothly
   headers: { 'Content-Type': 'application/json' },
 })
 
