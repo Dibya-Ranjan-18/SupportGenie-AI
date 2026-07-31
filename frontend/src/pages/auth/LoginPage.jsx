@@ -27,9 +27,20 @@ export default function LoginPage() {
       toast.success(`Welcome back, ${user.full_name || user.username}!`)
       navigate(user.role === 'admin' ? '/admin/dashboard' : '/chat', { replace: true })
     } catch (err) {
-      const msg = err.response?.data?.non_field_errors?.[0]
-        || err.response?.data?.detail
-        || 'Login failed. Please check your credentials.'
+      const resData = err.response?.data
+      let msg = 'Login failed. Please check your credentials.'
+      if (typeof resData === 'string') {
+        msg = resData
+      } else if (resData) {
+        const firstError = resData.non_field_errors?.[0]
+          || resData.detail
+          || resData.error
+          || resData.message
+          || (typeof resData === 'object' ? Object.values(resData).flat()?.[0] : null)
+        if (typeof firstError === 'string') {
+          msg = firstError
+        }
+      }
       toast.error(msg)
     } finally {
       setLoading(false)

@@ -75,10 +75,12 @@ class AdminUpdateUserSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
-    remember_me = serializers.BooleanField(default=False)
+    remember_me = serializers.BooleanField(default=False, required=False)
 
     def validate(self, attrs):
-        user = authenticate(username=attrs['email'], password=attrs['password'])
+        email = attrs.get('email', '').strip().lower()
+        password = attrs.get('password', '')
+        user = authenticate(username=email, password=password)
         if not user:
             raise serializers.ValidationError('Invalid email or password.')
         if not user.is_active:

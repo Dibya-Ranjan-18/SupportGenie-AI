@@ -11,7 +11,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-fallback-key-change-me')
 DEBUG = config('DEBUG', default=True, cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    default='localhost,127.0.0.1,.onrender.com,.vercel.app',
+    cast=Csv()
+)
 
 # ─── INSTALLED APPS ────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -141,21 +145,24 @@ SIMPLE_JWT = {
 }
 
 # ─── CORS ─────────────────────────────────────────────────────────────────────────
-CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=True, cast=bool)
+# NOTE: CORS_ALLOW_ALL_ORIGINS=True is INCOMPATIBLE with CORS_ALLOW_CREDENTIALS=True
+# (browsers reject wildcard '*' when credentials are sent). Use explicit origins instead.
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:5173,http://localhost:3000',
+    default='http://localhost:5173,http://localhost:3000,https://support-genie-ai.vercel.app',
     cast=Csv()
 )
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://.*\.vercel\.app$",
-    r"^https://.*\.onrender\.com$",
+    r"^https://[\w-]+\.vercel\.app$",
+    r"^https://[\w-]+\.onrender\.com$",
+    r"^http://localhost:\d+$",
 ]
-CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept', 'accept-encoding', 'authorization', 'content-type',
     'dnt', 'origin', 'user-agent', 'x-csrftoken', 'x-requested-with',
 ]
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 
 # ─── CSRF ─────────────────────────────────────────────────────────────────────────
 CSRF_TRUSTED_ORIGINS = [
