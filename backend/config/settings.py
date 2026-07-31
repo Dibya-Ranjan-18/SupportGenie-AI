@@ -81,8 +81,8 @@ if USE_POSTGRES or (DATABASE_URL and not DEBUG):
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL or f"postgres://{config('POSTGRES_USER', default='postgres')}:{config('POSTGRES_PASSWORD', default='')}@{config('POSTGRES_HOST', default='localhost')}:{config('POSTGRES_PORT', default='5432')}/{config('POSTGRES_DB', default='supportgenie')}",
-            conn_max_age=600,
-            ssl_require=not DEBUG
+            conn_max_age=0,
+            ssl_require=True
         )
     }
 else:
