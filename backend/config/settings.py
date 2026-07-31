@@ -166,12 +166,22 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+import os
+
+IS_VERCEL = config('VERCEL', default=False, cast=bool) or 'VERCEL' in os.environ
+
 # ─── STATIC & MEDIA ──────────────────────────────────────────────────────────────
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / config('MEDIA_ROOT', default='media')
+
+if IS_VERCEL:
+    MEDIA_ROOT = Path('/tmp/media')
+    VECTOR_STORE_PATH = Path('/tmp/vector_store/faiss_index')
+else:
+    MEDIA_ROOT = BASE_DIR / config('MEDIA_ROOT', default='media')
+    VECTOR_STORE_PATH = BASE_DIR / config('VECTOR_STORE_PATH', default='vector_store/faiss_index')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -190,7 +200,6 @@ FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173')
 
 # ─── AI / GEMINI ─────────────────────────────────────────────────────────────────
 GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
-VECTOR_STORE_PATH = BASE_DIR / config('VECTOR_STORE_PATH', default='vector_store/faiss_index')
 
 # ─── FILE UPLOAD ─────────────────────────────────────────────────────────────────
 FILE_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25 MB
