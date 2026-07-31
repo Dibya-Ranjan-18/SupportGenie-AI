@@ -24,7 +24,7 @@ import { SkeletonMessage } from '../../components/ui/Skeleton'
 import ErrorBoundary from '../../components/ui/ErrorBoundary'
 import ConfirmModal from '../../components/ui/ConfirmModal'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+import { BASE_URL as API_BASE } from '../../services/api'
 
 function TypingIndicator() {
   return (
