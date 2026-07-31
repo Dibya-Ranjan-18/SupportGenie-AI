@@ -132,8 +132,12 @@ export default function ForgotPasswordPage() {
       toast.success('OTP sent! Check your inbox.')
       setStep(1)
       setCountdown(60)
-    } catch {
-      toast.error('Something went wrong. Please try again.')
+    } catch (err) {
+      const resData = err.response?.data
+      const msg = typeof resData === 'string'
+        ? resData
+        : (resData?.error || resData?.message || (typeof resData === 'object' ? Object.values(resData).flat()?.[0] : null) || 'Something went wrong. Please try again.')
+      toast.error(msg)
     } finally {
       setLoading(false)
     }

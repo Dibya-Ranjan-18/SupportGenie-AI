@@ -176,7 +176,7 @@ class ForgotPasswordView(APIView):
     def post(self, request):
         serializer = ForgotPasswordSerializer(data=request.data)
         if serializer.is_valid():
-            email = serializer.validated_data['email'].strip()
+            email = serializer.validated_data['email'].strip().lower()
             PasswordResetToken.cleanup_expired()
             user = CustomUser.objects.filter(email__iexact=email).first()
             if user:
@@ -221,7 +221,8 @@ class ForgotPasswordView(APIView):
                     )
                 except Exception as e:
                     print(f"[Email Error] OTP mail failed for {user.email}: {e}")
-        return Response({'message': 'If this email is registered, you will receive an OTP shortly.'})
+            return Response({'message': 'If this email is registered, you will receive an OTP shortly.'})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class VerifyOTPView(APIView):
