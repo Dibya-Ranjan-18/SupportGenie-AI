@@ -28,9 +28,22 @@ _last_index_mtime = 0.0
 
 
 def _get_embeddings():
-    """Get or initialize the sentence transformer embeddings model."""
+    """Get or initialize embeddings model (uses API-based Gemini embeddings to conserve RAM on Render)."""
     global _embeddings
     if _embeddings is None:
+        gemini_key = getattr(settings, 'GEMINI_API_KEY', '') or os.environ.get('GEMINI_API_KEY', '')
+        if gemini_key:
+            try:
+                from langchain_google_genai import GoogleGenerativeAIEmbeddings
+                _embeddings = GoogleGenerativeAIEmbeddings(
+                    model="models/text-embedding-004",
+                    google_api_key=gemini_key
+                )
+                logger.info("Google Gemini cloud embeddings initialized successfully.")
+                return _embeddings
+            except Exception as e:
+                logger.warning(f"Failed to load Google Cloud embeddings, falling back: {e}")
+
         try:
             from langchain_huggingface import HuggingFaceEmbeddings
             _embeddings = HuggingFaceEmbeddings(
@@ -38,7 +51,7 @@ def _get_embeddings():
                 model_kwargs={'device': 'cpu'},
                 encode_kwargs={'normalize_embeddings': True}
             )
-            logger.info("Embeddings model loaded successfully.")
+            logger.info("Local HuggingFace embeddings model loaded successfully.")
         except Exception as e:
             logger.error(f"Failed to load embeddings model: {e}")
             _embeddings = None

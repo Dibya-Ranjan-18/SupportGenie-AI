@@ -106,11 +106,8 @@ def index_document(document_record) -> int:
     Full pipeline: extract text → chunk → embed → store in FAISS.
     Uses thread lock to ensure thread safety during FAISS disk updates.
     """
-    try:
-        from langchain_huggingface import HuggingFaceEmbeddings
-    except ImportError:
-        from langchain_community.embeddings import HuggingFaceEmbeddings
     from langchain_community.vectorstores import FAISS
+    from chatbot.ai_service import _get_embeddings
 
     store_path = str(settings.VECTOR_STORE_PATH)
     Path(store_path).parent.mkdir(parents=True, exist_ok=True)
@@ -131,11 +128,7 @@ def index_document(document_record) -> int:
 
     logger.info(f"Created {len(chunks)} chunks from {source_name}")
 
-    embeddings = HuggingFaceEmbeddings(
-        model_name="BAAI/bge-small-en-v1.5",
-        model_kwargs={'device': 'cpu'},
-        encode_kwargs={'normalize_embeddings': True}
-    )
+    embeddings = _get_embeddings()
 
     index_file = f"{store_path}.faiss"
 
@@ -170,11 +163,8 @@ def delete_document_from_index(document_title: str):
     Remove a document's chunks from FAISS by source metadata.
     Uses thread lock to ensure safe rebuild.
     """
-    try:
-        from langchain_huggingface import HuggingFaceEmbeddings
-    except ImportError:
-        from langchain_community.embeddings import HuggingFaceEmbeddings
     from langchain_community.vectorstores import FAISS
+    from chatbot.ai_service import _get_embeddings
 
     store_path = str(settings.VECTOR_STORE_PATH)
     index_file = f"{store_path}.faiss"
@@ -184,11 +174,7 @@ def delete_document_from_index(document_title: str):
 
     with _index_write_lock:
         try:
-            embeddings = HuggingFaceEmbeddings(
-                model_name="BAAI/bge-small-en-v1.5",
-                model_kwargs={'device': 'cpu'},
-                encode_kwargs={'normalize_embeddings': True}
-            )
+            embeddings = _get_embeddings()
             vs = FAISS.load_local(store_path, embeddings, allow_dangerous_deserialization=True)
 
             all_docs = []
@@ -278,17 +264,10 @@ def index_url_content(url: str, title: str = '', user = None):
     store_path = str(settings.VECTOR_STORE_PATH)
     Path(store_path).parent.mkdir(parents=True, exist_ok=True)
 
-    try:
-        from langchain_huggingface import HuggingFaceEmbeddings
-    except ImportError:
-        from langchain_community.embeddings import HuggingFaceEmbeddings
     from langchain_community.vectorstores import FAISS
+    from chatbot.ai_service import _get_embeddings
 
-    embeddings = HuggingFaceEmbeddings(
-        model_name="BAAI/bge-small-en-v1.5",
-        model_kwargs={'device': 'cpu'},
-        encode_kwargs={'normalize_embeddings': True}
-    )
+    embeddings = _get_embeddings()
 
     index_file = f"{store_path}.faiss"
 
